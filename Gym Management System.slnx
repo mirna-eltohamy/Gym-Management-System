@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="GymManagementSystem.BLL/GymManagementSystem.BLL.csproj" Id="bf5ba63b-6156-4280-94e1-6398d1256023" />
+  <Project Path="GymManagementSystem.DAL/GymManagementSystem.DAL.csproj" Id="314ec6cf-6471-4227-91c3-52b2b48d957f" />
+  <Project Path="GymManagementSystem.PL/GymManagementSystem.PL.csproj" Id="af4b460a-1c5a-4995-9ab5-8f417f7951ae" />
+</Solution>
