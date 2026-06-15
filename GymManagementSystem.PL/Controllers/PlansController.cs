@@ -11,7 +11,7 @@ namespace GymManagementSystem.PL
         //Open connection with DB with each obj
         //public readonly GymDbContext _context =new GymDbContext();
 
-        public readonly IPlanRepository _planRepository;
+        public readonly IGenericRepository<Plan> _planRepository;
 
         //public PlansController() 
         //{
@@ -19,7 +19,7 @@ namespace GymManagementSystem.PL
         //}
 
         //DI - ask CLR to inject inject obj from class implementing IPlanRepository
-        public PlansController(IPlanRepository planRepository)
+        public PlansController(IGenericRepository<Plan> planRepository)
         {
             _planRepository = planRepository;
         }

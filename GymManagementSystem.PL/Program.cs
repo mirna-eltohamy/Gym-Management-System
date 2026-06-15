@@ -1,3 +1,5 @@
+using GymManagementSystem.BLL.Services.Classes;
+using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.Interfaces;
@@ -13,7 +15,11 @@ public class Program
         // Add services to the container
         builder.Services.AddControllersWithViews();
 
-        builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+        //builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+
+        builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+        builder.Services.AddScoped<IMemberService, MemberService>();
 
         //builder.Services.AddScoped<GymDbContext>();
 

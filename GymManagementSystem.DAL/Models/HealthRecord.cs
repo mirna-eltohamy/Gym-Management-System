@@ -10,6 +10,8 @@ namespace GymManagementSystem.DAL.Models
         public decimal Weight { get; set; }
         public string BloodType { get; set; }
         public string? Note { get; set; }
+        public Member Member { get; set; }
+        public int MemberId { get; set; }
 
 
 
