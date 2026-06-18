@@ -21,6 +21,10 @@ public class Program
 
         builder.Services.AddScoped<IMemberService, MemberService>();
 
+        builder.Services.AddScoped<IPlanService, PlanService>();
+
+        builder.Services.AddScoped<ITrainerService, TrainerService>();
+
         //builder.Services.AddScoped<GymDbContext>();
 
         //DI for GymDbContext with options - Scoped by default

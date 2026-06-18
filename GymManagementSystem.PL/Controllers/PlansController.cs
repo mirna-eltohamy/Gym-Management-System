@@ -1,4 +1,6 @@
-﻿using GymManagementSystem.DAL;
+﻿using GymManagementSystem.BLL.Services.Interfaces;
+using GymManagementSystem.BLL.ViewModels.Plans;
+using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -8,47 +10,75 @@ namespace GymManagementSystem.PL
 {
     public class PlansController : Controller
     {
-        //Open connection with DB with each obj
-        //public readonly GymDbContext _context =new GymDbContext();
+        private readonly IPlanService _planService;
 
-        public readonly IGenericRepository<Plan> _planRepository;
-
-        //public PlansController() 
-        //{
-        //    _planRepository = new PlanRepository(); 
-        //}
-
-        //DI - ask CLR to inject inject obj from class implementing IPlanRepository
-        public PlansController(IGenericRepository<Plan> planRepository)
+        public PlansController(IPlanService planService)
         {
-            _planRepository = planRepository;
+            _planService = planService;
         }
 
-        //Index
-        // GET: /Plans/Index ----> List all plans
-        public async Task<IActionResult> Index()
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken ct)
         {
-            //var plans= await _context.Plans.ToListAsync();
+            var plans = await _planService.GetAllPlansAsync(ct);
 
-            var plans = await _planRepository.GetAllAsync();
-
-            //View() returns rz page with same action name - Index
-            //View(plans) - sends model represents plans in DB
             return View(plans); 
         }
 
 
-        //Details
-        // GET: /Plans/Details/Id
-        public async Task<IActionResult> Details(int id)
+        [HttpGet]
+        public async Task<IActionResult> Details(int id, CancellationToken ct)
         {
-            //var plan = await _context.Plans.FirstOrDefaultAsync(p => p.Id == id);
-
-            var plan = await _planRepository.GetByIdAsync(id);
-
-            if (plan is null) return RedirectToAction("Index");
-
+            var plan = await _planService.GetPlanByIdAsync(id, ct);
             return View(plan);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id, CancellationToken ct)
+        {
+            var plan = await _planService.GetPlanToEditAsync(id, ct);
+            if (plan == null)
+            {
+                TempData["ErrorMessage"] = "Cannot update plan with active memberships!";
+                return RedirectToAction("Index");
+            }
+            return View(plan);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit (int id, PlanEditViewModel model, CancellationToken ct)
+        {
+            if(ModelState.IsValid)
+            {
+                var result = await _planService.EditPlanAsync(id, model, ct);
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Plan updated successfully!";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["InfoMessage"] = "Plan Unchanged!";
+                    return RedirectToAction("Index");
+                }
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Activate(int id, CancellationToken ct)
+        {
+            var result = await _planService.ActivatePlanAsync(id, ct);
+            if(result)
+            {
+                TempData["SuccessMessage"] = "Plan status changed";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Cannot deactivate plan with active memberships";
+            }
+            return RedirectToAction("Index");
         }
 
 

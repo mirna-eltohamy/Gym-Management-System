@@ -3,6 +3,7 @@ using GymManagementSystem.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace GymManagementSystem.DAL.Repositories.Classes
@@ -17,6 +18,7 @@ namespace GymManagementSystem.DAL.Repositories.Classes
             _context = context;
             _dbSet = _context.Set<TEntity>();
         }
+
         public async Task<IEnumerable<TEntity>> GetAllAsync(bool tracking = false, CancellationToken ct = default)
             =>tracking? await _dbSet.ToListAsync(ct): await _dbSet.AsNoTracking().ToListAsync(ct) ;
 
@@ -41,7 +43,12 @@ namespace GymManagementSystem.DAL.Repositories.Classes
             return await _context.SaveChangesAsync(ct);
         }
 
-        
+        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default)
+            => await _dbSet.AnyAsync(predicate,ct);
+
+        public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default)
+            => await _dbSet.FirstOrDefaultAsync(predicate, ct);
+
 
     }
 }

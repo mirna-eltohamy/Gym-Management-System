@@ -9,5 +9,7 @@ namespace GymManagementSystem.DAL.Models
     {
         public Specialty Specialty { get; set; }
         public ICollection<Session> Sessions { get; set; }
+
+    
     }
 }
