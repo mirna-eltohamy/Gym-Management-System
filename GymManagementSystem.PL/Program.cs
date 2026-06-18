@@ -1,3 +1,5 @@
+using AutoMapper;
+using GymManagementSystem.BLL;
 using GymManagementSystem.BLL.Services.Classes;
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.DAL;
@@ -19,11 +21,20 @@ public class Program
 
         builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+        builder.Services.AddScoped<ISessionRepository, SessionRepository>();
+
         builder.Services.AddScoped<IMemberService, MemberService>();
 
         builder.Services.AddScoped<IPlanService, PlanService>();
 
         builder.Services.AddScoped<ITrainerService, TrainerService>();
+
+        builder.Services.AddScoped<ISessionService, SessionService>();
+
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));
+        //builder.Services.AddTransient<IMapper, Mapper>();
 
         //builder.Services.AddScoped<GymDbContext>();
 

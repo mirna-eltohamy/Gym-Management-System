@@ -25,23 +25,15 @@ namespace GymManagementSystem.DAL.Repositories.Classes
         public async Task<TEntity?> GetByIdAsync(int id, CancellationToken ct = default)
             => await _dbSet.FindAsync(id, ct);
 
-        public async Task<int> AddAsync(TEntity entity, CancellationToken ct = default)
-        {
-            await _dbSet.AddAsync(entity, ct);
-            return await _context.SaveChangesAsync();
+        public void Add(TEntity entity)
+            => _dbSet.AddAsync(entity);
+       
+        public void Update(TEntity entity)
+            => _dbSet.Update(entity);
 
-        }
-
-        public async Task<int> UpdateAsync(TEntity entity, CancellationToken ct = default)
-        {
-            _dbSet.Update(entity);
-            return await _context.SaveChangesAsync(ct);
-        }
-        public async Task<int> DeleteAsync(TEntity entity, CancellationToken ct = default)
-        {
-            _dbSet.Remove(entity);
-            return await _context.SaveChangesAsync(ct);
-        }
+        public void Delete(TEntity entity)
+            => _dbSet.Remove(entity);
+       
 
         public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default)
             => await _dbSet.AnyAsync(predicate,ct);
