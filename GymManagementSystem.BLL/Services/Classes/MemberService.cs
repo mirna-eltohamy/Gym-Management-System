@@ -21,12 +21,14 @@ namespace GymManagementSystem.BLL.Services.Classes
             _mapper = mapper;
         }
 
-        public async Task<bool> CreateMemberAsync(CreateMemberViewModel model, CancellationToken ct)
+        public async Task<Result> CreateMemberAsync(CreateMemberViewModel model, CancellationToken ct)
         {
             var emailExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m=>m.Email==model.Email, ct);
-            var phoneExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m=>m.Phone==model.Phone, ct);
+            if (emailExists) return Result.Validation("Failed to add member! Email already exists");
 
-            if(emailExists || phoneExists ) return false;
+            var phoneExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m=>m.Phone==model.Phone, ct);
+            if (phoneExists) return Result.Validation("Failed to add member! Phone Number already exists");
+
 
             var member = _mapper.Map<Member>(model);
 
@@ -34,22 +36,22 @@ namespace GymManagementSystem.BLL.Services.Classes
 
             var count = await _unitOfWork.SaveChangesAsync(ct);
 
-            return count > 0;
+            return count > 0? Result.OK() : Result.Fail("Failed to create member");
         }
 
-        public async Task<bool> DeleteMemberAsync(int memberId, CancellationToken ct)
+        public async Task<Result> DeleteMemberAsync(int memberId, CancellationToken ct)
         {
             var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(memberId, ct);
-            if(member == null) return false;
+            if(member == null) return Result.NotFound($"Member with Id {memberId} not found");
 
             var hasFutureSessions = await _unitOfWork.GetRepository<Booking>().AnyAsync(b => b.MemberId == memberId && b.Session.StartDate> DateTime.UtcNow , ct);
-            if(hasFutureSessions) return false;
+            if(hasFutureSessions) return Result.Validation("Failed to remove member! Member has future sessions");
 
             _unitOfWork.GetRepository<Member>().Delete(member);
 
             var count = await _unitOfWork.SaveChangesAsync(ct);
 
-            return count > 0;
+            return count > 0? Result.OK():Result.Fail("Failed to remove member!");
         }
 
         public async Task<IEnumerable<MemberViewModel>> GetAllMembersAsync(CancellationToken ct)
@@ -99,18 +101,18 @@ namespace GymManagementSystem.BLL.Services.Classes
             return model;
         }
 
-        public async Task<bool> UpdateMemberAsync(int memberId, MemberToUpdateViewModel model, CancellationToken ct)
+        public async Task<Result> UpdateMemberAsync(int memberId, MemberToUpdateViewModel model, CancellationToken ct)
         {
             var member = await _unitOfWork.GetRepository<Member>().GetByIdAsync(memberId, ct);
-            if (member is null) return false;
+            if (member is null) return Result.NotFound($"Member with Id {memberId} not found");
 
             //Check if email|phone already exist
-            var emailExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m => (m.Email == model.Email) && m.Id != member.Id, ct);
-            var phoneExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m => (m.Phone == model.Phone)&&m.Id!=member.Id, ct);
+            var emailExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m => m.Email == model.Email && m.Id!=memberId, ct);
+            if (emailExists) return Result.Validation("Failed to update member! Email already exists");
 
-            if (emailExists || phoneExists) return false;
+            var phoneExists = await _unitOfWork.GetRepository<Member>().AnyAsync(m => m.Phone == model.Phone && m.Id != memberId, ct);
+            if (phoneExists) return Result.Validation("Failed to update member! Phone Number already exists");
 
-            //Map - model -> DB
             member.Email = model.Email;
             member.Phone = model.Phone;
             member.Address.BuildingNumber = model.BuildingNumber;
@@ -118,12 +120,11 @@ namespace GymManagementSystem.BLL.Services.Classes
             member.Address.City = model.City;
 
 
-            //Update
             _unitOfWork.GetRepository<Member>().Update(member);
 
             var count = await _unitOfWork.SaveChangesAsync(ct);
             
-            return count>0;
+            return count>0 ? Result.OK() : Result.Fail("Failed to update member") ;
         }
     }
 }

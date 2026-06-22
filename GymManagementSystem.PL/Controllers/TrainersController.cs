@@ -1,4 +1,5 @@
-﻿using GymManagementSystem.BLL.Services.Interfaces;
+﻿using GymManagementSystem.BLL.Services.Classes;
+using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.BLL.ViewModels.Trainers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,14 +33,14 @@ namespace GymManagementSystem.PL.Controllers
             if(ModelState.IsValid)
             {
                 var result = await _trainerService.CreateTrainerAsync(model, ct);
-                if (result)
+                if (result.success)
                 {
                     TempData["SuccessMessage"] = "Trainer Added Successfully!";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Failed to add trainer!";
+                    TempData["ErrorMessage"] = result.error;
                     return RedirectToAction("Index");
 
                 }
@@ -52,6 +53,11 @@ namespace GymManagementSystem.PL.Controllers
         public async Task<IActionResult> Details(int id, CancellationToken ct)
         {
             var model = await _trainerService.GetTrainerDetailsAsync(id, ct);
+            if (model == null)
+            {
+                TempData["ErrorMessage"] = $"Trainer with Id {id} not found";
+                return RedirectToAction("Index");
+            }
             
             return View(model);
         }
@@ -59,24 +65,29 @@ namespace GymManagementSystem.PL.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken ct)
         {
-            var model = await _trainerService.GetTrainerToUpdateAsync(id, ct);
-            return View(model);
+            var result = await _trainerService.GetTrainerToUpdateAsync(id, ct);
+            if (result is null)
+            {
+                TempData["ErrorMessage"] = "Trainer not found";
+                return RedirectToAction("Index");
+            }
+            return View(result);
         }
         
         [HttpPost]
-        public async Task<IActionResult> Edit(TrainerToUpdateViewModel model, CancellationToken ct)
+        public async Task<IActionResult> Edit(int id, TrainerToUpdateViewModel model, CancellationToken ct)
         {
             if(ModelState.IsValid)
             {
-                var result = await _trainerService.UpdateTrainerAsync(model, ct);
-                if(result)
+                var result = await _trainerService.UpdateTrainerAsync(id, model, ct);
+                if(result.success)
                 {
                     TempData["SuccessMessage"] = "Trainer updated successfully!";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Failed to update trainer";
+                    TempData["ErrorMessage"] = result.error;
                     return RedirectToAction("Index");
                 }
             }
@@ -85,12 +96,18 @@ namespace GymManagementSystem.PL.Controllers
         }
 
         [HttpGet]
-        public IActionResult Delete()
+        public async Task<IActionResult> delete(int id, CancellationToken ct)
         {
+            var result = await _trainerService.GetTrainerDetailsAsync(id, ct);
+            if (result is null)
+            {
+                TempData["ErrorMessage"] = "Trainer not found";
+                return RedirectToAction("Index");
+            }
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Delete(int id, CancellationToken ct)
+        public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
         {
             var result = await _trainerService.DeleteTrainerAsync(id, ct);
             if(result)
@@ -99,7 +116,7 @@ namespace GymManagementSystem.PL.Controllers
             }
             else
             {
-                TempData["ErrorMessage"] = "Failed to delete trainer! Trainer has active sessions";
+                TempData["ErrorMessage"] = "Failed to remove trainer! Trainer has scheduled sessions" ;
             }
             return RedirectToAction("Index");
         }

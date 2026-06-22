@@ -48,12 +48,15 @@ namespace GymManagementSystem.BLL
                 .ForMember(d => d.BuildingNumber, o => o.MapFrom(s => s.Address.BuildingNumber))
                 .ForMember(d => d.Street, o => o.MapFrom(s => s.Address.Street))
                 .ForMember(d => d.City, o => o.MapFrom(s => s.Address.City));
+
+
         }
         private void MapPlan() 
         {
             CreateMap<Plan, PlanViewModel>();
 
             CreateMap<Plan, PlanEditViewModel>();
+
         }
         private void MapTrainer()
         {
@@ -75,15 +78,21 @@ namespace GymManagementSystem.BLL
                 .ForMember(d => d.BuildingNumber, o => o.MapFrom(s => s.Address.BuildingNumber))
                 .ForMember(d => d.Street, o => o.MapFrom(s => s.Address.Street))
                 .ForMember(d => d.City, o => o.MapFrom(s => s.Address.City));
+
         }
         private void MapSession()
         {
-            CreateMap<Session, SessionViewModel>();
+            CreateMap<Session, SessionViewModel>()
+                .ForMember(d=>d.TrainerName, o=>o.MapFrom(s=>s.Trainer.Name))
+                .ForMember(d=>d.CategoryName, o=>o.MapFrom(s=>s.Category.CategoryName));
 
             CreateMap<CreateSessionViewModel, Session>();
 
             CreateMap<Trainer, TrainerSelectViewModel>();
             CreateMap<Category, CategorySelectViewModel>();
+
+            CreateMap<Session, UpdateSessionViewModel>();
+
         }
 
     }

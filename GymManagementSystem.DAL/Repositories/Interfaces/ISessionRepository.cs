@@ -11,6 +11,9 @@ namespace GymManagementSystem.DAL.Repositories.Interfaces
 
         Task<int> GetCountOfBookedSlotsAsync(int sessionId, CancellationToken ct = default);
 
+        Task<Session?> GetSessionByIdWithTrainerAndCategoryAsync(int sessionId, CancellationToken ct = default);
+
+
        
     }
 }

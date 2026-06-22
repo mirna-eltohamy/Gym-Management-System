@@ -52,14 +52,14 @@ namespace GymManagementSystem.PL
             if(ModelState.IsValid)
             {
                 var result = await _planService.EditPlanAsync(id, model, ct);
-                if (result)
+                if (result.success)
                 {
                     TempData["SuccessMessage"] = "Plan updated successfully!";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["InfoMessage"] = "Plan Unchanged!";
+                    TempData["InfoMessage"] = result.error;
                     return RedirectToAction("Index");
                 }
             }

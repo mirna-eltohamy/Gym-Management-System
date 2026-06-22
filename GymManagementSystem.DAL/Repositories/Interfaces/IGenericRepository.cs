@@ -18,5 +18,7 @@ namespace GymManagementSystem.DAL.Repositories.Interfaces
 
         Task<bool> AnyAsync(Expression<Func<TEntity,bool>> predicate, CancellationToken ct = default);
         Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity,bool>> predicate, CancellationToken ct = default);
+
+        Task<int> GetCountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken ct = default);
     }
 }

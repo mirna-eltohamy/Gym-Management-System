@@ -41,6 +41,7 @@ namespace GymManagementSystem.DAL.Repositories.Classes
         public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default)
             => await _dbSet.FirstOrDefaultAsync(predicate, ct);
 
-
+        public async Task<int> GetCountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken ct = default)
+            => predicate is null? await _dbSet.AsNoTracking().CountAsync(ct) : await _dbSet.AsNoTracking().CountAsync(predicate, ct);
     }
 }

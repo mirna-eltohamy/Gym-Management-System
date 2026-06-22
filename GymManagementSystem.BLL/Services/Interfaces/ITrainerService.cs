@@ -10,9 +10,9 @@ namespace GymManagementSystem.BLL.Services.Interfaces
     {
         Task<IEnumerable<TrainerViewModel>> GetAllTrainersAsync(CancellationToken ct);
         Task<TrainerViewModel?> GetTrainerDetailsAsync(int trainerId, CancellationToken ct);
-        Task<bool> CreateTrainerAsync(CreateTrainerViewModel model, CancellationToken ct);
+        Task<Result> CreateTrainerAsync(CreateTrainerViewModel model, CancellationToken ct);
         Task<TrainerToUpdateViewModel> GetTrainerToUpdateAsync(int trainerId, CancellationToken ct);
-        Task<bool> UpdateTrainerAsync(TrainerToUpdateViewModel model, CancellationToken ct);
+        Task<Result> UpdateTrainerAsync(int trainerId, TrainerToUpdateViewModel model, CancellationToken ct);
         Task<bool> DeleteTrainerAsync(int trainerId, CancellationToken ct);
     }
 }

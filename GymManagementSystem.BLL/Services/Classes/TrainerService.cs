@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.BLL.ViewModels.MemberViewModels;
 using GymManagementSystem.BLL.ViewModels.Trainers;
@@ -23,19 +24,21 @@ namespace GymManagementSystem.BLL.Services.Classes
             _mapper = mapper;
         }   
 
-        public async Task<bool> CreateTrainerAsync(CreateTrainerViewModel model, CancellationToken ct)
+        public async Task<Result> CreateTrainerAsync(CreateTrainerViewModel model, CancellationToken ct)
         {
             var emailExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Email == model.Email, ct);
-            var phoneExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Phone == model.Phone, ct);
+            if (emailExists) return Result.Validation("Failed to add trainer! Email already exists");
 
-            if (emailExists || phoneExists) return false;
+            var phoneExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Phone == model.Phone, ct);
+            if (phoneExists) return Result.Validation("Failed to add trainer! Phone Number already exists");
+
 
             var trainer = _mapper.Map<Trainer>(model);
 
             _unitOfWork.GetRepository<Trainer>().Add(trainer);
             var count = await _unitOfWork.SaveChangesAsync(ct);
 
-            return count>0;
+            return count>0? Result.OK() : Result.Fail("Failed to add trainer");
         }
 
         public async Task<bool> DeleteTrainerAsync(int trainerId, CancellationToken ct)
@@ -43,7 +46,7 @@ namespace GymManagementSystem.BLL.Services.Classes
             var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIdAsync(trainerId, ct);
 
             var scheduledSession = await _unitOfWork.GetRepository<Session>().AnyAsync(s=>s.TrainerId==trainerId && s.StartDate > DateTime.Now, ct);
-            if(scheduledSession) return false;
+            if (scheduledSession) return false;
 
             _unitOfWork.GetRepository<Trainer>().Delete(trainer);
             var count = await _unitOfWork.SaveChangesAsync(ct);
@@ -79,26 +82,30 @@ namespace GymManagementSystem.BLL.Services.Classes
             return model;
         }
 
-        public async Task<bool> UpdateTrainerAsync(TrainerToUpdateViewModel model, CancellationToken ct)
+        public async Task<Result> UpdateTrainerAsync(int trainerId, TrainerToUpdateViewModel model, CancellationToken ct)
         {
-            var emailExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Email == model.Email && t.Id!=model.id, ct);
-            var phoneExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Phone == model.Phone && t.Id != model.id, ct);
+            var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIdAsync(trainerId, ct);
+            if (trainer is null) return Result.NotFound($"Member with Id {trainerId} not found");
 
-            if (emailExists || phoneExists) return false;
 
-            var trainer = await _unitOfWork.GetRepository<Trainer>().GetByIdAsync(model.id, ct);
+            var emailExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Email == model.Email && t.Id != trainerId, ct);
+            if (emailExists) return Result.Validation("Failed to update trainer! Email already exists");
+
+            var phoneExists = await _unitOfWork.GetRepository<Trainer>().AnyAsync(t => t.Phone == model.Phone && t.Id != trainerId, ct);
+            if (phoneExists) return Result.Validation("Failed to update trainer! Phone Number already exists");
+
 
             trainer.Email = model.Email;
             trainer.Phone = model.Phone;
-            trainer.Specialty = model.Specialty;
             trainer.Address.BuildingNumber = model.BuildingNumber;
             trainer.Address.Street = model.Street;
             trainer.Address.City = model.City;
+            trainer.Specialty = model.Specialty;
 
             _unitOfWork.GetRepository<Trainer>().Update(trainer);
             var count = await _unitOfWork.SaveChangesAsync(ct);
 
-            return count > 0;
+            return count > 0 ? Result.OK() : Result.Fail("Failed to update trainer");
         }
     }
 }

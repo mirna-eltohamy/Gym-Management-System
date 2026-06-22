@@ -3,13 +3,14 @@ using GymManagementSystem.BLL;
 using GymManagementSystem.BLL.Services.Classes;
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.DAL;
+using GymManagementSystem.DAL.Data_Seeding;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
 
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +20,7 @@ public class Program
 
         //builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 
-        builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        //builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 
@@ -30,6 +31,8 @@ public class Program
         builder.Services.AddScoped<ITrainerService, TrainerService>();
 
         builder.Services.AddScoped<ISessionService, SessionService>();
+
+        builder.Services.AddScoped<IAnalyticService, AnalyticService>();
 
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -46,6 +49,20 @@ public class Program
 
 
         var app = builder.Build();
+
+        using var scope = app.Services.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<GymDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<GymDataSeeding>>();
+
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+            await context.Database.MigrateAsync(); //Update-Database
+
+
+        var planSeedFilePath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "files", "plans.json");
+        await GymDataSeeding.SeedAsync<Plan>(context, planSeedFilePath, logger);
+
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())

@@ -32,13 +32,13 @@ namespace GymManagementSystem.PL.Controllers
             if(ModelState.IsValid) // Server-side Validation
             {
                 var result = await _memberService.CreateMemberAsync(model, ct);
-                if(result)
+                if(result.success)
                 {
                     TempData["SuccessMessage"] = "Member Created Successfully!";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Failed to create member!";
+                    TempData["ErrorMessage"] = result.error;
                 }
                 return RedirectToAction("Index");
             }
@@ -92,14 +92,14 @@ namespace GymManagementSystem.PL.Controllers
             {
                 var result = await _memberService.UpdateMemberAsync(id, model, ct);
 
-                if(result)
+                if(result.success)
                 {
                     TempData["SuccessMessage"] = "Member updated successfully!";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Failed to update member";
+                    TempData["ErrorMessage"] = result.error;
                     return RedirectToAction("Index");
                 }
             }
@@ -124,13 +124,13 @@ namespace GymManagementSystem.PL.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
         {
             var result = await _memberService.DeleteMemberAsync(id, ct);
-            if (result)
+            if (result.success)
             {
                 TempData["SuccessMessage"] = "Member deleted successfully!";
             }
             else
             {
-                TempData["ErrorMessage"] = "Failed to delete member";
+                TempData["ErrorMessage"] =  result.error;
             }
             return RedirectToAction("Index");
         }

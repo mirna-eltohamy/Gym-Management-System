@@ -12,7 +12,7 @@ namespace GymManagementSystem.BLL.Services.Interfaces
         public Task<IEnumerable<PlanViewModel>> GetAllPlansAsync(CancellationToken ct);
         public Task<PlanViewModel> GetPlanByIdAsync(int id, CancellationToken ct);
         public Task<PlanEditViewModel?> GetPlanToEditAsync(int id, CancellationToken ct);
-        public Task<bool> EditPlanAsync(int id, PlanEditViewModel model , CancellationToken ct);
+        public Task<Result> EditPlanAsync(int id, PlanEditViewModel model , CancellationToken ct);
         public Task<bool> ActivatePlanAsync(int id, CancellationToken ct);
 
 
