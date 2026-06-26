@@ -3,11 +3,13 @@ using GymManagementSystem.BLL.ViewModels.Plans;
 using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem.PL
 {
+    [Authorize(Roles = "SuperAdmin")]
     public class PlansController : Controller
     {
         private readonly IPlanService _planService;

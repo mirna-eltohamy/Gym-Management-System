@@ -10,7 +10,7 @@
         <header class="mb-4">
             <h3 class="text-primary-color">Add Member</h3>
         </header>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
 
             <!-- Step navigation -->
             <ul class="nav nav-tabs mb-4" id="addMemberTabs" role="tablist">
@@ -36,7 +36,17 @@
                         <h5 class="text-primary fw-bold">Personal Information</h5>
                         <hr class="mt-2">
                     </div>
+
                     <div class="row g-3">
+                        <div>
+                            <img id="photoPreview" src="#" alt="Photo Preview" class="img-thumbnail" style="max-width : 200px; display:none"/>
+                        </div>
+                        <div>
+                            <label asp-for="PhotoFile" class="form-label"></label>
+                            <input asp-for="PhotoFile" type="file" class="form-control" id="photoInput" />
+                            <span asp-validation-for="PhotoFile" class="text-danger"></span>
+                        </div>
+    
                         <div class="col-12 col-md-6">
                             <label asp-for="Name" class="form-label"></label>
                             <input asp-for="Name" type="text" class="form-control" />
@@ -153,10 +163,9 @@
 
 }
 
-<script>
 
 <script>
-    // Preview photo before upload
+     // Preview photo before upload
     document.getElementById('photoInput').addEventListener('change', function (e) {
         var file = e.target.files[0];
         if (file) {

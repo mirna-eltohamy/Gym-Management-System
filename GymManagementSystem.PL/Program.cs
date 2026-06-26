@@ -1,11 +1,14 @@
 using AutoMapper;
 using GymManagementSystem.BLL;
+using GymManagementSystem.BLL.Services.Attachment;
 using GymManagementSystem.BLL.Services.Classes;
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Data_Seeding;
+using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.Classes;
 using GymManagementSystem.DAL.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 public class Program
@@ -34,6 +37,8 @@ public class Program
 
         builder.Services.AddScoped<IAnalyticService, AnalyticService>();
 
+        builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         builder.Services.AddAutoMapper(m => m.AddProfile(new MappingProfile()));
@@ -47,6 +52,9 @@ public class Program
             options.UseSqlServer(builder.Configuration.GetConnectionString("Default Connection"));
         });
 
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<GymDbContext>();
+
 
         var app = builder.Build();
 
@@ -54,6 +62,9 @@ public class Program
 
         var context = scope.ServiceProvider.GetRequiredService<GymDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<GymDataSeeding>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
 
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
         if (pendingMigrations.Any())
@@ -63,6 +74,7 @@ public class Program
         var planSeedFilePath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "files", "plans.json");
         await GymDataSeeding.SeedAsync<Plan>(context, planSeedFilePath, logger);
 
+        await IdentityDataSeeding.SeedIdentityDataAsync(userManager, roleManager, logger);
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
@@ -74,6 +86,8 @@ public class Program
 
         app.UseHttpsRedirection();
         app.UseRouting();
+
+        app.UseAuthentication();
 
         app.UseAuthorization();
 
